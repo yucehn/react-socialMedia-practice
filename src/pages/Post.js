@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion, arrayRemove } from "firebase/firestore";
 import {Container,  Grid, Header, Image, Segment, Icon } from "semantic-ui-react";
 
 import Topics from '../components/Topics';
@@ -10,14 +11,26 @@ function Post(){
 	const [ post, setPost ] = useState({
 		author: {},
 	});
+	const db = getFirestore();
+	const docRef = doc(db, "posts", postId);
+	const auth = getAuth();
+	const uid =  auth.currentUser.uid;
+
 	useEffect(()=>{
-		const db = getFirestore();
-		const docRef = doc(db, "posts", postId);
-		getDoc(docRef).then((dpcSnapshot)=>{
-			const data = dpcSnapshot.data();
+		onSnapshot(docRef,(doc)=>{
+			const data = doc.data();
 			setPost(data);
-		});   
+		}); 
 	},[]);
+	
+	const isCollectedBy = post.collectedBy?.includes(uid);
+	function toggleCollected(){
+		updateDoc(docRef, {
+			collectedBy: isCollectedBy ? arrayRemove(uid) : arrayUnion(uid),
+		});
+	}
+
+
 	return (
 		<Container>
 			<Grid>
@@ -26,8 +39,11 @@ function Post(){
 						<Topics />
 					</Grid.Column>
 					<Grid.Column width={10}>
-						<Image src={post.author.photoURL} />
-						{post.author.displayName}
+						{ post.author.photoURL?
+						<Image src={post.author.photoURL} />:
+						<Icon name="user circle" />}
+						
+						{post.author.displayName||'使用者'}
 						<Header>
 							{post.title}
 							<Header.Subheader>
@@ -41,10 +57,10 @@ function Post(){
 						<Segment basic vertical>
 							留言 0。 讚 0。 
 							<Icon name="thumbs up outline" color="grey" />。
-							<Icon name="bookmark outline" color="grey" /> 
+							<Icon name={`bookmark${isCollectedBy?'':' outline'}`} color={isCollectedBy?'blue':'grey'} link onClick={toggleCollected} /> 
 						</Segment>
 					</Grid.Column>
-					<Grid.Column width={3}>空白</Grid.Column>
+					<Grid.Column width={3}></Grid.Column>
 				</Grid.Row>
 			</Grid>
 		</Container>
