@@ -48,7 +48,7 @@ function Posts(){
 											<Item.Header>{post.title}</Item.Header>
 											<Item.Description>{post.content}</Item.Description>
 											<Item.Extra>
-												留言 0 。讚 0
+												留言 0 。讚 {post.likedBy?.length||0}
 											</Item.Extra>
 										</Item.Content>
 									</Item>
