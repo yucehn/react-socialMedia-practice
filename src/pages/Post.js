@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion, arrayRemove, writeBatch, increment, Timestamp, collection } from "firebase/firestore";
-import {Container,  Grid, Header, Image, Segment, Icon, Comment, Form } from "semantic-ui-react";
+import { getFirestore, doc, onSnapshot, updateDoc, arrayUnion, arrayRemove, writeBatch, increment, Timestamp, collection, query, orderBy } from "firebase/firestore";
+import { Grid, Header, Image, Segment, Icon, Comment, Form } from "semantic-ui-react";
 
 import Topics from '../components/Topics';
 
@@ -16,7 +16,8 @@ function Post(){
 		author: {},
 	});
 	const [commentContent,setCommentContent]=useState('');
-	const [isLoading, setIsLoading]=useState(false)
+	const [isLoading, setIsLoading]=useState(false);
+	const [comments, setComments] = useState([]);
 
 	useEffect(()=>{
 		onSnapshot(docRef,(doc)=>{
@@ -24,6 +25,18 @@ function Post(){
 			setPost(data);
 		}); 
 	},[]);
+
+	useEffect(()=>{
+		const docQuery = query(collection(docRef, 'comments'),orderBy('createdAt'));
+		onSnapshot(
+			docQuery,
+			(collectionSnapshot) => {
+				const data = collectionSnapshot.docs.map((doc)=>{
+					 return doc.data();
+				})
+			setComments(data);
+		});
+	})
 
 	const isCollectedBy = post.collectedBy?.includes(uid);
 	const isLiked = post.likedBy?.includes(uid);
@@ -57,68 +70,62 @@ function Post(){
 	};
 
 	return (
-		<Container>
-			<Grid>
-				<Grid.Row>
-					<Grid.Column width={3}>
-						<Topics />
-					</Grid.Column>
-					<Grid.Column width={10}>
-						{ post.author.photoURL?
-						<Image src={post.author.photoURL} />:
-						<Icon name="user circle" />}
-						
-						{post.author.displayName||'使用者'}
-						<Header>
-							{post.title}
-							<Header.Subheader>
-								{post.topic}。{post.createdAt?.toDate().toLocaleDateString()}
-							</Header.Subheader>
-						</Header>
-						<Image src={post.imageUrl} />
-						<Segment basic vertical>
-							{post.content}
-						</Segment>
-						<Segment basic vertical>
-							留言 0。讚 {post.likedBy?.length||0}。 
-							<Icon 
-								name={`thumbs up${isLiked?'':' outline'}`} 
-								color={isLiked?'blue':'grey'}
-								onClick={()=> toggle(isLiked,'likedBy')}
-								link						
-							/>。
-							<Icon 
-								name={`bookmark${isCollectedBy?'':' outline'}`}
-								color={isCollectedBy?'blue':'grey'}
-								onClick={()=>toggle(isCollectedBy,'collectedBy')} 
-								link
-							/> 
-						</Segment>
-						<Comment>
-							<Comment.Group>
-								<Form reply onSubmit={onSubmit}>
-									<Form.TextArea 
-										value={commentContent} 
-										onChange={(e)=>{setCommentContent(e.target.value)}}
-									/>
-									<Form.Button loading={isLoading}>留言</Form.Button>
-								</Form>
-								<Header>共1則留言</Header>
-								<Comment>
-									<Comment.Avatar src="" />
-									<Comment.Content>
-										<Comment.Author as="span">留言者名稱</Comment.Author>
-										<Comment.Metadata>{new Date().toLocaleDateString()}</Comment.Metadata>
-										<Comment.Text>留言內容</Comment.Text>
-									</Comment.Content>
-								</Comment>
-							</Comment.Group>
-						</Comment>
-					</Grid.Column>
-					<Grid.Column width={3}></Grid.Column>
-				</Grid.Row>
-			</Grid>
-		</Container>
+		<Grid.Column width={10}>
+			{ post.author.photoURL?
+			<Image src={post.author.photoURL} />:
+			<Icon name="user circle" />}
+			
+			{post.author.displayName||'使用者'}
+			<Header>
+				{post.title}
+				<Header.Subheader>
+					{post.topic}。{post.createdAt?.toDate().toLocaleDateString()}
+				</Header.Subheader>
+			</Header>
+			<Image src={post.imageUrl} />
+			<Segment basic vertical>
+				{post.content}
+			</Segment>
+			<Segment basic vertical>
+				留言 {post.commentsCount || 0}。讚 {post.likedBy?.length||0}。 
+				<Icon
+					name={`thumbs up${isLiked?'':' outline'}`} 
+					color={isLiked?'blue':'grey'}
+					onClick={()=> toggle(isLiked,'likedBy')}
+					link
+				/>。
+				<Icon
+					name={`bookmark${isCollectedBy?'':' outline'}`}
+					color={isCollectedBy?'blue':'grey'}
+					onClick={()=>toggle(isCollectedBy,'collectedBy')} 
+					link
+				/>
+			</Segment>
+			<Comment>
+				<Comment.Group>
+					<Form reply onSubmit={onSubmit}>
+						<Form.TextArea
+							value={commentContent} 
+							onChange={(e)=>{setCommentContent(e.target.value)}}
+						/>
+						<Form.Button loading={isLoading}>留言</Form.Button>
+					</Form>
+					<Header>共{post.commentsCount || 0}則留言</Header>
+					{comments.map((comment)=>{
+						return (
+							<Comment>
+								<Comment.Avatar src={comment.author.photoURL} />
+								<Comment.Content>
+									<Comment.Author as="span">{comment.author.displayName||'使用者'}</Comment.Author>
+									<Comment.Metadata>{comment.createdAt.toDate().toLocaleString()}</Comment.Metadata>
+									<Comment.Text>{comment.content}</Comment.Text>
+								</Comment.Content>
+							</Comment>
+						)
+					})}
+				</Comment.Group>
+			</Comment>
+		</Grid.Column>
 	)
 }
 

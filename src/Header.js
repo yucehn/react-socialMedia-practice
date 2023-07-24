@@ -33,7 +33,7 @@ function Header(){
 	}
 	return (
 		<Menu>
-			<Menu.Item as={Link} to="/">logo</Menu.Item>
+			<Menu.Item as={Link} to="/posts">logo</Menu.Item>
 			<Menu.Item>
 				<Search/>
 			</Menu.Item>
@@ -41,7 +41,7 @@ function Header(){
 				{user? (
 					<Menu>
 						<Menu.Item as={Link} to="/new-post">發表文章</Menu.Item>
-						<Menu.Item as={Link} to="/my">會員</Menu.Item>
+						<Menu.Item as={Link} to="/my/posts">會員</Menu.Item>
 						<Menu.Item onClick={userSignOut}>登出</Menu.Item>
 					</Menu>
 				):(
