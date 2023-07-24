@@ -19,7 +19,7 @@ function Header(){
 			// ...
 		}
 		});
-	});
+	}, []);
 	function userSignOut(){
 		const auth = getAuth();
 		signOut(auth).then(() => {
