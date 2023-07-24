@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { Button, Header, Input, Modal, Segment, Image } from "semantic-ui-react";
-import { getAuth, updateProfile, onAuthStateChanged } from "firebase/auth";
+import { Button, Header, Input, Modal, Segment, Image, Message } from "semantic-ui-react";
+import { getAuth, updateProfile, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential  } from "firebase/auth";
 import { ref, getStorage, uploadBytes, getDownloadURL } from "firebase/storage";
 
 function MyName({user}){
@@ -95,7 +95,12 @@ function MyPhoto({user}){
 			<Segment vertical>
 				<Image src={user.photoURL} avatar wrapped />
 			</Segment>
-			<Modal open={isModalOpen} size="mini">
+			<Modal
+				onClose={() => setIsModalOpen(false)}
+				onOpen={() => setIsModalOpen(true)}
+				open={isModalOpen} 
+				size="mini"
+			>
 				<Modal.Header>修改會員照片</Modal.Header>
 				<Modal.Content image>
 					<Image src={previewImageUrl} avatar wrapped />
@@ -119,6 +124,77 @@ function MyPhoto({user}){
 	)
 }
 
+function MyPassword({user}){
+	const [ isModalOpen, setIsModalOpen ] = useState(false);
+	const [ isLoading, setIsLoading ] = useState(false);
+	const [ oldPassword, setOldPassword ]=useState('');
+	const [ newPassword, setNewPassword ]=useState('');
+	const [errorMessage, setErrorMessage]= useState(null);
+
+	const onSubmit = () => {
+		setIsLoading(true);
+		const credential = EmailAuthProvider.credential(user.email, oldPassword);
+		reauthenticateWithCredential(user, credential).then(()=>{
+			updatePassword(user, newPassword).then(()=>{
+				setIsModalOpen(false);
+				setOldPassword('');
+				setNewPassword('')
+				setIsLoading(false);
+				setErrorMessage(null);
+			});
+		}).catch((error)=> {
+			switch(error.code) {
+				case 'auth/wrong-password':
+					setErrorMessage('請確認舊密碼');
+					break;
+				default:
+			}
+			setIsLoading(false);
+		});
+	}
+
+	return (
+		<>
+			<Header size="small">
+				會員密碼
+				<Button floated="right" onClick={()=>{setIsModalOpen(true)}}>修改</Button>
+			</Header>
+			<Segment vertical>
+				******
+			</Segment>
+			<Modal
+				onClose={() => setIsModalOpen(false)}
+				onOpen={() => setIsModalOpen(true)}
+				open={isModalOpen} 
+				size="mini"
+			>
+				<Modal.Header>修改會員密碼</Modal.Header>
+				<Modal.Content>
+					<Header size="small">目前密碼</Header>
+					<Input 
+						value={oldPassword} 
+						placeholder="輸入新的會員密碼"
+						onChange={(e)=>{setOldPassword(e.target.value)}}
+						fluid
+					/>
+					<Header size="small">新密碼</Header>
+					<Input 
+						value={newPassword} 
+						placeholder="輸入新的會員密碼"
+						onChange={(e)=>{setNewPassword(e.target.value)}}
+						fluid
+					/>
+					{ errorMessage && <Message negative>{errorMessage}</Message> }
+				</Modal.Content>
+				<Modal.Actions>
+					<Button onClick={()=>setIsModalOpen(false)}>取消</Button>
+					<Button onClick={onSubmit} loading={isLoading}>修改</Button>
+				</Modal.Actions>
+			</Modal>
+		</>
+	)
+}
+
 function MySettings(){
 	const [user, serUser] = useState({});
 	useEffect(()=>{
@@ -134,13 +210,7 @@ function MySettings(){
 		<>
 			<MyName user={user} />
 			<MyPhoto user={user} />
-			<Header size="small">
-				會員密碼
-				<Button floated="right">修改</Button>
-			</Header>
-			<Segment vertical>
-				******
-			</Segment>
+			<MyPassword user={user} />
 		</>
 	)
 }
