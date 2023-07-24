@@ -9,6 +9,7 @@ import Post from './pages/Post';
 import NewPost from './pages/NewPost';
 import MyPost from './pages/MyPost';
 import MyCollections from './pages/MyCollections';
+import MySettings from './pages/MySettings';
 
 import Topics from './components/Topics';
 import MyMenu from './components/MyMenu';
@@ -35,7 +36,7 @@ function App() {
 								<Route exact path="/posts/:postId" element={<Post/>} />
 								<Route exact path="/my/posts" element={<MyPost/>}/>
 								<Route exact path="/my/collections" element={<MyCollections/>} />
-								<Route exact path="/my/settings" element={'會員資料'}/>
+								<Route exact path="/my/settings" element={<MySettings/>}/>
 								<Route exact path="/" element={<Home/>}/>
 							</Routes>
 						</Grid.Column>
