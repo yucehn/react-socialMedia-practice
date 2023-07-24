@@ -1,25 +1,10 @@
 import { Menu, Search } from 'semantic-ui-react';
 import { Link } from 'react-router-dom';
-import { getAuth, onAuthStateChanged, signOut } from "firebase/auth";
+import { getAuth, signOut } from "firebase/auth";
 import React from 'react';
 
-function Header(){
-	const [user, setUser] = React.useState(null);
-	React.useEffect(()=>{
-		const auth = getAuth();
-		onAuthStateChanged(auth, (currentUser) => {
-		if (currentUser) {
-			// User is signed in, see docs for a list of available properties
-			// https://firebase.google.com/docs/reference/js/auth.user
-			// const uid = currentUser.uid;
-			setUser(currentUser.email)
-			// ...
-		} else {
-			// User is signed out
-			// ...
-		}
-		});
-	}, []);
+function Header({user}){
+
 	function userSignOut(){
 		const auth = getAuth();
 		signOut(auth).then(() => {

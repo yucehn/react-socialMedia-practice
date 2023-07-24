@@ -1,6 +1,8 @@
-import { BrowserRouter, Routes, Route} from 'react-router-dom';
-import useFirebase from "./utils/firebase";
+import { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Grid, Container } from "semantic-ui-react";
+import useFirebase from "./utils/firebase";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 import Header from './Header';
 import SignIn from './pages/SignIn';
@@ -15,11 +17,21 @@ import Topics from './components/Topics';
 import MyMenu from './components/MyMenu';
 
 function App() {
+	const [user, setUser] = useState(null);
+
+	useEffect(()=>{
+		const auth = getAuth();
+		onAuthStateChanged(auth, (currentUser) => {
+			if (currentUser) {
+				setUser(currentUser);
+			}
+		});
+	},[])
 	useFirebase();
 
 	return (
 		<BrowserRouter>
-			<Header />
+			<Header user={user} />
 			<Container>
 				<Grid>
 					<Grid.Row>
@@ -33,10 +45,12 @@ function App() {
 						<Grid.Column width={10}>
 							<Routes>
 								<Route exact path="/posts" element={<Home/>}/>
-								<Route exact path="/posts/:postId" element={<Post/>} />
-								<Route exact path="/my/posts" element={<MyPost/>}/>
-								<Route exact path="/my/collections" element={<MyCollections/>} />
-								<Route exact path="/my/settings" element={<MySettings/>}/>
+								<Route exact path="/posts/:postId" element={user?<Post/>:<Navigate to="/" replace={true} />} />
+								<Route path="/my" element={user?'':<Navigate to="/" replace={true} />}>
+									<Route exact path="/my/posts" element={<MyPost/>}/>
+									<Route exact path="/my/collections" element={<MyCollections/>} />
+									<Route exact path="/my/settings" element={<MySettings/>}/>
+								</Route>
 								<Route exact path="/" element={<Home/>}/>
 							</Routes>
 						</Grid.Column>
@@ -45,8 +59,8 @@ function App() {
 				</Grid>
 			</Container>
 			<Routes>
-				<Route exact path="/signIn" element={<SignIn/>}/>
-				<Route exact path='/new-post' element={<NewPost/>} />
+				<Route exact path="/signIn" element={user?<Navigate to="/" replace={true} />:<SignIn/>}/>
+				<Route exact path='/new-post' element={user?<NewPost/>:<Navigate to="/" replace={true} />} />
 			</Routes>
 		</BrowserRouter>
 	)
