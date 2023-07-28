@@ -7,7 +7,6 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import Header from './Header';
 import SignIn from './pages/SignIn';
 import Home from './pages/Home';
-import Post from './pages/Post';
 import NewPost from './pages/NewPost';
 import MyPost from './pages/MyPost';
 import MyCollections from './pages/MyCollections';
@@ -45,7 +44,7 @@ function App() {
 						<Grid.Column width={10}>
 							<Routes>
 								<Route exact path="/posts" element={<Home/>}/>
-								<Route exact path="/posts/:postId" element={user?<Post/>:<Navigate to="/" replace={true} />} />
+								<Route exact path="/posts/:postId" element={user?<Home/>:<Navigate to="/" replace={true} />} />
 								<Route path="/my" element={user?'':<Navigate to="/" replace={true} />}>
 									<Route exact path="/my/posts" element={<MyPost/>}/>
 									<Route exact path="/my/collections" element={<MyCollections/>} />

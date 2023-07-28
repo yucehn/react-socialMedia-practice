@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import { List } from 'semantic-ui-react';
 
 function Topics(){
 	const [topics, setTopics] = useState([]);
+	const location = useLocation();
+	const urlSearchParams = new URLSearchParams(location.search);
+	const currentTopic = urlSearchParams.get('topic');
+
 	useEffect(()=>{
 		const db = getFirestore();
 		const usersCollectionRef = collection(db, 'topics');
@@ -18,7 +23,15 @@ function Topics(){
 
 	return <List animated selection>
 		{topics.map(topic=>{
-			return <List.Item key={topic.name}>{topic.name}</List.Item>
+			return (
+				<List.Item 
+					key={topic.name} 
+					as={Link} 
+					to={`/posts?topic=${topic.name}`}
+					active={topic.name === currentTopic}
+				>
+						{topic.name}
+				</List.Item>)
 		})}
 	</List>
 }
