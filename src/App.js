@@ -8,6 +8,7 @@ import Header from './Header';
 import SignIn from './pages/SignIn';
 import Home from './pages/Home';
 import NewPost from './pages/NewPost';
+import Post from './pages/Post';
 import MyPost from './pages/MyPost';
 import MyCollections from './pages/MyCollections';
 import MySettings from './pages/MySettings';
@@ -16,14 +17,14 @@ import Topics from './components/Topics';
 import MyMenu from './components/MyMenu';
 
 function App() {
-	const [user, setUser] = useState(null);
+	const [user, setUser] = useState();
 
 	useEffect(()=>{
 		const auth = getAuth();
 		onAuthStateChanged(auth, (currentUser) => {
-			if (currentUser) {
-				setUser(currentUser);
-			}
+			// if (currentUser) {
+			// }
+			setUser(currentUser);
 		});
 	},[])
 	useFirebase();
@@ -44,8 +45,8 @@ function App() {
 						<Grid.Column width={10}>
 							<Routes>
 								<Route exact path="/posts" element={<Home/>}/>
-								<Route exact path="/posts/:postId" element={user?<Home/>:<Navigate to="/" replace={true} />} />
-								<Route path="/my" element={user?'':<Navigate to="/" replace={true} />}>
+								<Route exact user={user} path="/posts/:postId" element={user!==null?<Post/>:<Navigate to="/" replace={true} />} />
+								<Route path="/my" element={user!==null?'':<Navigate to="/" replace={true} />}>
 									<Route exact path="/my/posts" element={<MyPost/>}/>
 									<Route exact path="/my/collections" element={<MyCollections/>} />
 									<Route exact path="/my/settings" element={<MySettings/>}/>
@@ -58,8 +59,8 @@ function App() {
 				</Grid>
 			</Container>
 			<Routes>
-				<Route exact path="/signIn" element={user?<Navigate to="/" replace={true} />:<SignIn/>}/>
-				<Route exact path='/new-post' element={user?<NewPost/>:<Navigate to="/" replace={true} />} />
+				<Route exact path="/signIn" element={user!==null?<Navigate to="/" replace={true} />:<SignIn/>}/>
+				<Route exact path='/new-post' element={user!==null?<NewPost/>:<Navigate to="/" replace={true} />} />
 			</Routes>
 		</BrowserRouter>
 	)
