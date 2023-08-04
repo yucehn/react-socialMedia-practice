@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { Grid, Container } from "semantic-ui-react";
+import { Grid, Container, Image } from "semantic-ui-react";
 import useFirebase from "./utils/firebase";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 
@@ -16,14 +16,15 @@ import MySettings from './pages/MySettings';
 import Topics from './components/Topics';
 import MyMenu from './components/MyMenu';
 
+import "./assets/styles.module.css";
+import background from "./assets/image/homeBg.jpg";
+
 function App() {
 	const [user, setUser] = useState();
 
 	useEffect(()=>{
 		const auth = getAuth();
 		onAuthStateChanged(auth, (currentUser) => {
-			// if (currentUser) {
-			// }
 			setUser(currentUser);
 		});
 	},[])
@@ -33,6 +34,7 @@ function App() {
 		<BrowserRouter>
 			<Header user={user} />
 			<Container>
+				<Image src={background} style={{position:'fixed', bottom: 0, zIndex: -1}}></Image>
 				<Grid>
 					<Grid.Row>
 						<Grid.Column width={3}>

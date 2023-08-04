@@ -2,6 +2,7 @@
 node_modules
 .firebase
 /dist
+/build
 
 # test coverage
 /coverage

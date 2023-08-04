@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Header, Input, Modal, Segment, Image, Message } from "semantic-ui-react";
+import { Button, Header, Input, Modal, Segment, Image, Message, Icon } from "semantic-ui-react";
 import { getAuth, updateProfile, onAuthStateChanged, updatePassword, EmailAuthProvider, reauthenticateWithCredential  } from "firebase/auth";
 import { ref, getStorage, uploadBytes, getDownloadURL } from "firebase/storage";
 
@@ -93,7 +93,11 @@ function MyPhoto({user}){
 				<Button floated="right" onClick={()=> setIsModalOpen(true)}>修改</Button>
 			</Header>
 			<Segment vertical>
-				<Image src={user.photoURL} avatar wrapped />
+				{
+					user.photoURL
+					? (<Image src={user.photoURL} avatar /> )
+					: <Icon name="user circle"/>
+				}
 			</Segment>
 			<Modal
 				onClose={() => setIsModalOpen(false)}
@@ -103,7 +107,7 @@ function MyPhoto({user}){
 			>
 				<Modal.Header>修改會員照片</Modal.Header>
 				<Modal.Content image>
-					<Image src={previewImageUrl} avatar wrapped />
+					{ (previewImageUrl === null) ? '' : <Image src={previewImageUrl} avatar wrapped /> }
 					<Modal.Description>
 						<Button as="label" htmlFor="post-image">上傳</Button>
 						<Input 
@@ -115,7 +119,7 @@ function MyPhoto({user}){
 					</Modal.Description>
 				</Modal.Content>
 				<Modal.Actions>
-					<Button onClick={()=>setIsModalOpen(false)}>取消</Button>
+					<Button onClick={()=>{setIsModalOpen(false);setIsLoading(false);}}>取消</Button>
 					<Button onClick={onSubmit} loading={isLoading}>修改</Button>
 				</Modal.Actions>
 			</Modal>
