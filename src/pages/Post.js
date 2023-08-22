@@ -95,29 +95,37 @@ function Post({user}){
 				{post.content}
 			</Segment>
 			<Segment basic vertical>
-				留言 {post.commentsCount || 0}。讚 {post.likedBy?.length||0}。 
-				<Icon
-					name={`thumbs up${isLiked?'':' outline'}`} 
-					color={isLiked?'blue':'grey'}
-					onClick={()=> toggle(isLiked,'likedBy')}
-					link
-				/>。
-				<Icon
-					name={`bookmark${isCollectedBy?'':' outline'}`}
-					color={isCollectedBy?'blue':'grey'}
-					onClick={()=>toggle(isCollectedBy,'collectedBy')} 
-					link
-				/>
+				留言 {post.commentsCount || 0}。讚 {post.likedBy?.length||0}
+				{ uid ? (
+					<>
+						。
+						<Icon
+							name={`thumbs up${isLiked?'':' outline'}`} 
+							color={isLiked?'blue':'grey'}
+							onClick={()=> toggle(isLiked,'likedBy')}
+							link
+						/>
+						。
+						<Icon
+							name={`bookmark${isCollectedBy?'':' outline'}`}
+							color={isCollectedBy?'blue':'grey'}
+							onClick={()=>toggle(isCollectedBy,'collectedBy')} 
+							link
+						/>
+					</>
+				):''}	
 			</Segment>
 			<Comment>
 				<Comment.Group>
-					<Form reply onSubmit={onSubmit}>
-						<Form.TextArea
-							value={commentContent} 
-							onChange={(e)=>{setCommentContent(e.target.value)}}
-						/>
-						<Form.Button loading={isLoading}>留言</Form.Button>
-					</Form>
+					{ uid ? (
+						<Form reply onSubmit={onSubmit}>
+							<Form.TextArea
+								value={commentContent} 
+								onChange={(e)=>{setCommentContent(e.target.value)}}
+							/>
+							<Form.Button loading={isLoading}>留言</Form.Button>
+						</Form>
+					):''}
 					<Header>共{post.commentsCount || 0}則留言</Header>
 					{comments.map((comment)=>{
 						return (

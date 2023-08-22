@@ -47,7 +47,7 @@ function App() {
 						<Grid.Column width={10}>
 							<Routes>
 								<Route exact path="/posts" element={<Home/>}/>
-								<Route exact user={user} path="/posts/:postId" element={user!==null?<Post/>:<Navigate to="/" replace={true} />} />
+								<Route exact user={user} path="/posts/:postId" element={<Post/>} />
 								<Route path="/my" element={user!==null?'':<Navigate to="/" replace={true} />}>
 									<Route exact path="/my/posts" element={<MyPost/>}/>
 									<Route exact path="/my/collections" element={<MyCollections/>} />
