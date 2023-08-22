@@ -10,7 +10,13 @@ function SignIn(){
 	const [email, setEmail] = React.useState('');
 	const [password, setPassword] = React.useState('');
 	const [errorMessage, setErrorMessage]=React.useState(null);
-	const [isLoading, setIsLoading] = React.useState(false)
+	const [isLoading, setIsLoading] = React.useState(false);
+
+	const reset = ()=>{
+		setErrorMessage('');
+		setEmail('');
+		setPassword('');
+	}
 
 	function onSubmit(){
 		setIsLoading(true);
@@ -18,7 +24,6 @@ function SignIn(){
 			createUserWithEmailAndPassword(auth, email,password)
 				.then((userCredential) => {
 					const user = userCredential.email;
-					console.log('user:', user)
 					setIsLoading(false);
 					navigate('/');
 			  }).catch((error) => {
@@ -69,7 +74,7 @@ function SignIn(){
 					active={activeItem==='register'} 
 					onClick={()=>{
 						setActiveItem('register'); 
-						setErrorMessage('');
+						reset();
 					}}
 				>
 					註冊
@@ -78,7 +83,7 @@ function SignIn(){
 					active={activeItem==='signIn'}
 					onClick={()=>{
 						setActiveItem('signIn');
-						setErrorMessage('');
+						reset();
 					}}
 				>
 					登入
