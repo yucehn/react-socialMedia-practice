@@ -14,7 +14,10 @@ function Topics(){
 		const usersCollectionRef = collection(db, 'topics');
 		getDocs(usersCollectionRef)
 			.then(res=>{
-				const resTopics = res.docs.map(doc=> doc.data());
+				let resTopics = res.docs.map(doc=> doc.data());
+				resTopics.unshift({
+					name:'全部',
+				})
 				setTopics(resTopics);
 			}).catch(error=>{
 				console.log('error', error)
@@ -22,13 +25,13 @@ function Topics(){
 	}, []);
 
 	return <List animated selection>
-		{topics.map(topic=>{
+		{ topics.map(topic=>{
 			return (
 				<List.Item 
 					key={topic.name} 
 					as={Link} 
-					to={`/posts?topic=${topic.name}`}
-					active={topic.name === currentTopic}
+					to={`/posts${topic.name!=='全部'? '?topic='+topic.name:''}`}
+					active={topic.name === currentTopic || topic.name ==='全部'&& !currentTopic}
 				>
 						{topic.name}
 				</List.Item>)
