@@ -1,7 +1,10 @@
 import algoliasearch from "algoliasearch";
 
-const client = algoliasearch("Application ID","Search-Only API Key"); // setting algolia API Keys
+const client = algoliasearch(
+  process.env.REACT_APP_ALGOLIA_APP_ID,
+  process.env.REACT_APP_ALGOLIA_API_KEY
+);
 
-const algolia = client.initIndex("Index name"); // search Index name
+const algolia = client.initIndex(process.env.REACT_APP_ALGOLIA_INDEX_NAME);
 
 export default algolia;

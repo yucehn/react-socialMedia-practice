@@ -24,7 +24,9 @@ function Header({user}){
 	}
 
 	function onResultSelect(e,{result}){
-		navigate(`/posts/${result.id}`)
+		navigate(`/posts/${result.id}`);
+		setInputValue('');
+		setResults([]);
 	}
 
 	function userSignOut(){

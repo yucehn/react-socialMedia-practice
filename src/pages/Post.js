@@ -18,15 +18,16 @@ function Post({user}){
 	const [comments, setComments] = useState([]);
 
 	useEffect(()=>{
-		onSnapshot(docRef,(doc)=>{
+		const unsubscribe = onSnapshot(docRef,(doc)=>{
 			const data = doc.data();
 			setPost(data);
-		}); 
-	},[]);
+		});
+		return () => unsubscribe();
+	},[postId]);
 
 	useEffect(()=>{
 		const docQuery = query(collection(docRef, 'comments'),orderBy('createdAt'));
-		onSnapshot(
+		const unsubscribe = onSnapshot(
 			docQuery,
 			(collectionSnapshot) => {
 				const data = collectionSnapshot.docs.map((doc)=>{
@@ -34,7 +35,8 @@ function Post({user}){
 				})
 			setComments(data);
 		});
-	})
+		return () => unsubscribe();
+	},[postId])
 
 	const isCollectedBy = post.collectedBy?.includes(uid);
 	const isLiked = post.likedBy?.includes(uid);
@@ -129,7 +131,7 @@ function Post({user}){
 					<Header>共{post.commentsCount || 0}則留言</Header>
 					{comments.map((comment)=>{
 						return (
-							<Comment>
+							<Comment key={comment.createdAt}>
 								<Comment.Avatar src={comment.author.photoURL} />
 								<Comment.Content>
 									<Comment.Author as="span">{comment.author.displayName||'使用者'}</Comment.Author>
