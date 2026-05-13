@@ -5,7 +5,6 @@ import {
   collection,
   getDocs,
   Timestamp,
-  addDoc,
   setDoc,
   doc,
 } from "firebase/firestore";
@@ -14,79 +13,75 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 import { Container, Header, Form, Image, Button } from "semantic-ui-react";
 
+const PLACEHOLDER_IMAGE = "https://react.semantic-ui.com/images/wireframe/image.png";
+
 function NewPost() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [topics, setTopics] = useState([]);
   const [topicName, setTopicName] = useState("");
-  const [file, setFile] = useState("");
+  const [file, setFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(PLACEHOLDER_IMAGE);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const db = getFirestore();
-    const usersCollectionRef = collection(db, "topics");
-    getDocs(usersCollectionRef)
+    getDocs(collection(db, "topics"))
       .then((res) => {
-        const resTopics = res.docs.map((doc) => doc.data());
-        setTopics(resTopics);
+        setTopics(res.docs.map((doc) => doc.data()));
       })
-      .catch((error) => {
-        console.log("error", error);
-      });
+      .catch((error) => console.log("error", error));
   }, []);
 
-  const options = topics.map((topic) => {
-    return {
-      text: topic.name,
-      value: topic.name,
-    };
-  });
+  useEffect(() => {
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
 
-  const previewUrl = file
-    ? URL.createObjectURL(file)
-    : "https://react.semantic-ui.com/images/wireframe/image.png";
+  const options = topics.map((topic) => ({
+    text: topic.name,
+    value: topic.name,
+  }));
 
-  const auth = getAuth();
-  console.log(auth.currentUser);
   async function onSubmit() {
     setIsLoading(true);
+    const auth = getAuth();
     const db = getFirestore();
+    const newDocRef = doc(collection(db, "posts"));
 
-    const docRefID = await addDoc(collection(db, "posts"), {}).then((ref) => {
-      return ref.id;
-    });
-    let imageUrl = null;
-    if (file) {
-      // 上傳圖片
-      const storage = getStorage();
-      const fileRef = ref(storage, "post-images/" + docRefID);
-      const metadata = {
-        contentType: file.type,
-      };
-      imageUrl = await uploadBytes(fileRef, file, metadata).then(() => {
-        return getDownloadURL(fileRef);
+    try {
+      let imageUrl = null;
+      if (file) {
+        const storage = getStorage();
+        const fileRef = ref(storage, "post-images/" + newDocRef.id);
+        imageUrl = await uploadBytes(fileRef, file, { contentType: file.type }).then(() =>
+          getDownloadURL(fileRef)
+        );
+      }
+
+      await setDoc(newDocRef, {
+        title,
+        content,
+        topic: topicName,
+        createdAt: Timestamp.now(),
+        author: {
+          displayName: auth.currentUser.displayName || "",
+          photoURL: auth.currentUser.photoURL || "",
+          uid: auth.currentUser.uid || "",
+          email: auth.currentUser.email || "",
+        },
+        imageUrl,
       });
-    }
 
-    setDoc(doc(db, "posts", docRefID), {
-      title,
-      content,
-      topic: topicName,
-      createdAt: Timestamp.now(),
-      author: {
-        displayName: auth.currentUser.displayName || "",
-        photoURL: auth.currentUser.photoURL || "",
-        uid: auth.currentUser.uid || "",
-        email: auth.currentUser.email || "",
-      },
-      imageUrl: imageUrl,
-    }).then(() => {
-      setIsLoading(false);
       navigate("/");
-    });
-
-    return;
+    } catch (error) {
+      console.log("error", error);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -116,8 +111,9 @@ function NewPost() {
         <Form.Dropdown
           options={options}
           placeholder="選擇文章主題"
-          selection={topicName || false}
-          onChange={(e, { value }) => setTopicName(value)}
+          selection
+          value={topicName}
+          onChange={(_, { value }) => setTopicName(value)}
         />
         <Form.Button loading={isLoading}>送出</Form.Button>
       </Form>
