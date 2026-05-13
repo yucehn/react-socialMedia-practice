@@ -7,11 +7,8 @@ import {
   query,
   where,
 } from "firebase/firestore";
-import { FixedSizeList } from "react-window";
 
 import Post from "../components/Post";
-
-const ITEM_HEIGHT = 100;
 
 function MyPost({ user }) {
   const [posts, setPosts] = useState([]);
@@ -25,31 +22,20 @@ function MyPost({ user }) {
     );
     getDocs(postsRef)
       .then((res) => {
-        const data = res.docs.map((doc) => {
-          const id = doc.id;
-          return { ...doc.data(), id };
-        });
+        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
         setPosts(data);
       })
-      .catch((error) => {
-        console.log("error", error);
-      });
+      .catch((error) => console.log("error", error));
   }, [user]);
-
-  const Row = ({ index, style }) => <Post post={posts[index]} style={style} />;
 
   return (
     <>
       <Header>我的文章</Header>
-      <FixedSizeList
-        height={window.innerHeight - 150}
-        width="100%"
-        itemCount={posts.length}
-        itemSize={ITEM_HEIGHT}
-        style={{ overflowX: "hidden" }}
-      >
-        {Row}
-      </FixedSizeList>
+      <div className="overflow-y-auto" style={{ height: "calc(100vh - 150px)" }}>
+        {posts.map((post) => (
+          <Post key={post.id} post={post} />
+        ))}
+      </div>
     </>
   );
 }
