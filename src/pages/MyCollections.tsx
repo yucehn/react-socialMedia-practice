@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Header, Item } from "semantic-ui-react";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
 
 import Post from "../components/Post";
@@ -29,12 +28,12 @@ function MyCollections({ user }: MyCollectionsProps) {
 
   return (
     <>
-      <Header>我的收藏</Header>
-      <Item.Group>
+      <h2 className="text-xl font-bold mb-4">我的收藏</h2>
+      <div>
         {posts.map((post) => (
           <Post post={post} key={post.id} />
         ))}
-      </Item.Group>
+      </div>
     </>
   );
 }

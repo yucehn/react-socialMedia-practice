@@ -1,4 +1,3 @@
-import { Header } from "semantic-ui-react";
 import { useQuery } from "@tanstack/react-query";
 
 import Post from "../components/Post";
@@ -18,7 +17,7 @@ function MyPost({ user }: MyPostProps) {
 
   return (
     <>
-      <Header>我的文章</Header>
+      <h2 className="text-xl font-bold mb-4">我的文章</h2>
       <div className="overflow-y-auto" style={{ height: "calc(100vh - 150px)" }}>
         {posts.map((post) => (
           <Post key={post.id} post={post} />

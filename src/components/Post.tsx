@@ -1,5 +1,4 @@
 import { Link } from "react-router-dom";
-import { Image, Icon } from "semantic-ui-react";
 import type { Post as PostType } from "../types";
 
 const placeholder = "https://react.semantic-ui.com/images/wireframe/image.png";
@@ -22,9 +21,15 @@ function Post({ post }: PostProps) {
       <div className="flex-1 min-w-0">
         <div className="text-black/40 text-[0.9em] mb-[0.2em]">
           {post.author.photoURL ? (
-            <Image src={post.author.photoURL} avatar />
+            <img
+              src={post.author.photoURL}
+              alt=""
+              className="w-5 h-5 rounded-full inline-block align-middle"
+            />
           ) : (
-            <Icon name="user circle" />
+            <svg className="w-5 h-5 inline-block align-middle text-black/40" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+            </svg>
           )}
           {` `}
           {post.topic}。{post.author.displayName || "匿名"}
