@@ -1,39 +1,56 @@
-import "./button.css";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from "../utils/cn";
 
-export interface ButtonProps {
-  /** Is this the principal call to action on the page? */
+const buttonVariants = cva(
+  "inline-block cursor-pointer border-0 rounded-[3em] font-bold leading-none",
+  {
+    variants: {
+      variant: {
+        primary: "bg-[#555ab9] text-white",
+        secondary:
+          "shadow-[rgba(0,0,0,0.15)_0px_0px_0px_1px_inset] bg-transparent text-[#333] border border-[#333]",
+      },
+      size: {
+        small: "py-[10px] px-4 text-xs",
+        medium: "py-[11px] px-5 text-sm",
+        large: "py-3 px-6 text-base",
+      },
+    },
+    defaultVariants: {
+      variant: "secondary",
+      size: "medium",
+    },
+  },
+);
+
+export interface ButtonProps
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof buttonVariants> {
   primary?: boolean;
-  /** What background color to use */
   backgroundColor?: string;
-  /** How large should the button be? */
-  size?: "small" | "medium" | "large";
-  /** Button contents */
   label: string;
-  /** Optional click handler */
-  onClick?: () => void;
 }
 
-/** Primary UI component for user interaction */
 export const Button = ({
   primary = false,
-  size = "medium",
+  size,
   backgroundColor,
   label,
+  className,
+  style,
   ...props
-}: ButtonProps) => {
-  const mode = primary
-    ? "storybook-button--primary !text-red-500"
-    : "storybook-button--secondary";
-  return (
-    <button
-      type="button"
-      className={["storybook-button", `storybook-button--${size}`, mode].join(
-        " ",
-      )}
-      style={{ backgroundColor }}
-      {...props}
-    >
-      {label}
-    </button>
-  );
-};
+}: ButtonProps) => (
+  <button
+    type="button"
+    className={cn(
+      buttonVariants({ variant: primary ? "primary" : "secondary", size }),
+      className,
+      "hover:opacity-80",
+    )}
+    style={{ backgroundColor, ...style }}
+    {...props}
+  >
+    {label}
+  </button>
+);

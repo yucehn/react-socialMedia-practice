@@ -16,6 +16,7 @@ import {
   reauthenticateWithCredential,
 } from "firebase/auth";
 import { ref, getStorage, uploadBytes, getDownloadURL } from "firebase/storage";
+import { Button as AppButton } from "../stories";
 import type { User } from "../types";
 
 interface UserProp {
@@ -41,9 +42,12 @@ function MyName({ user }: UserProp) {
       <Header>會員資料</Header>
       <Header size="small">
         會員名稱
-        <Button floated="right" onClick={() => setIsModalOpen(true)}>
-          修改
-        </Button>
+        <AppButton
+          primary
+          label="修改"
+          className="float-right"
+          onClick={() => setIsModalOpen(true)}
+        />
       </Header>
       <Segment vertical>{user.displayName}</Segment>
       <Modal
@@ -63,7 +67,9 @@ function MyName({ user }: UserProp) {
         </Modal.Content>
         <Modal.Actions>
           <Button onClick={() => setIsModalOpen(false)}>取消</Button>
-          <Button onClick={onSubmit} loading={isLoading}>修改</Button>
+          <Button onClick={onSubmit} loading={isLoading}>
+            修改
+          </Button>
         </Modal.Actions>
       </Modal>
     </>
@@ -89,9 +95,9 @@ function MyPhoto({ user }: UserProp) {
     try {
       const storage = getStorage();
       const fileRef = ref(storage, "user-photos/" + user.uid);
-      const imageUrl = await uploadBytes(fileRef, file, { contentType: file.type }).then(() =>
-        getDownloadURL(fileRef),
-      );
+      const imageUrl = await uploadBytes(fileRef, file, {
+        contentType: file.type,
+      }).then(() => getDownloadURL(fileRef));
       await updateProfile(user, { photoURL: imageUrl });
       setFile(null);
       setIsModalOpen(false);
@@ -106,12 +112,19 @@ function MyPhoto({ user }: UserProp) {
     <>
       <Header size="small">
         會員照片
-        <Button floated="right" onClick={() => setIsModalOpen(true)}>
-          修改
-        </Button>
+        <AppButton
+          label="修改"
+          primary
+          className={"float-right"}
+          onClick={() => setIsModalOpen(true)}
+        />
       </Header>
       <Segment vertical>
-        {user.photoURL ? <Image src={user.photoURL} avatar /> : <Icon name="user circle" />}
+        {user.photoURL ? (
+          <Image src={user.photoURL} avatar />
+        ) : (
+          <Icon name="user circle" />
+        )}
       </Segment>
       <Modal
         onClose={() => setIsModalOpen(false)}
@@ -122,10 +135,16 @@ function MyPhoto({ user }: UserProp) {
         <Modal.Header>修改會員照片</Modal.Header>
         <Modal.Content image>
           {(previewUrl || user.photoURL) && (
-            <Image src={previewUrl ?? user.photoURL ?? undefined} avatar wrapped />
+            <Image
+              src={previewUrl ?? user.photoURL ?? undefined}
+              avatar
+              wrapped
+            />
           )}
           <Modal.Description>
-            <Button as="label" htmlFor="user-photo">上傳</Button>
+            <Button as="label" htmlFor="user-photo">
+              上傳
+            </Button>
             <Input
               id="user-photo"
               type="file"
@@ -138,8 +157,17 @@ function MyPhoto({ user }: UserProp) {
           </Modal.Description>
         </Modal.Content>
         <Modal.Actions>
-          <Button onClick={() => { setIsModalOpen(false); setFile(null); }}>取消</Button>
-          <Button onClick={onSubmit} loading={isLoading}>修改</Button>
+          <Button
+            onClick={() => {
+              setIsModalOpen(false);
+              setFile(null);
+            }}
+          >
+            取消
+          </Button>
+          <Button onClick={onSubmit} loading={isLoading}>
+            修改
+          </Button>
         </Modal.Actions>
       </Modal>
     </>
@@ -167,7 +195,8 @@ function MyPassword({ user }: UserProp) {
         }),
       )
       .catch((error) => {
-        if (error.code === "auth/wrong-password") setErrorMessage("請確認舊密碼");
+        if (error.code === "auth/wrong-password")
+          setErrorMessage("請確認舊密碼");
       })
       .finally(() => setIsLoading(false));
   };
@@ -176,9 +205,11 @@ function MyPassword({ user }: UserProp) {
     <>
       <Header size="small">
         會員密碼
-        <Button floated="right" onClick={() => setIsModalOpen(true)}>
-          修改
-        </Button>
+        <AppButton
+          label="修改"
+          className={"float-right"}
+          onClick={() => setIsModalOpen(true)}
+        />
       </Header>
       <Segment vertical>******</Segment>
       <Modal
@@ -207,7 +238,9 @@ function MyPassword({ user }: UserProp) {
         </Modal.Content>
         <Modal.Actions>
           <Button onClick={() => setIsModalOpen(false)}>取消</Button>
-          <Button onClick={onSubmit} loading={isLoading}>修改</Button>
+          <Button onClick={onSubmit} loading={isLoading}>
+            修改
+          </Button>
         </Modal.Actions>
       </Modal>
     </>
