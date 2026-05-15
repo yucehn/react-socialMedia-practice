@@ -16,8 +16,13 @@ import {
   reauthenticateWithCredential,
 } from "firebase/auth";
 import { ref, getStorage, uploadBytes, getDownloadURL } from "firebase/storage";
+import type { User } from "../types";
 
-function MyName({ user }) {
+interface UserProp {
+  user: User;
+}
+
+function MyName({ user }: UserProp) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -65,11 +70,11 @@ function MyName({ user }) {
   );
 }
 
-function MyPhoto({ user }) {
+function MyPhoto({ user }: UserProp) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [file, setFile] = useState(null);
-  const [previewUrl, setPreviewUrl] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (!file) return;
@@ -85,7 +90,7 @@ function MyPhoto({ user }) {
       const storage = getStorage();
       const fileRef = ref(storage, "user-photos/" + user.uid);
       const imageUrl = await uploadBytes(fileRef, file, { contentType: file.type }).then(() =>
-        getDownloadURL(fileRef)
+        getDownloadURL(fileRef),
       );
       await updateProfile(user, { photoURL: imageUrl });
       setFile(null);
@@ -117,7 +122,7 @@ function MyPhoto({ user }) {
         <Modal.Header>修改會員照片</Modal.Header>
         <Modal.Content image>
           {(previewUrl || user.photoURL) && (
-            <Image src={previewUrl || user.photoURL} avatar wrapped />
+            <Image src={previewUrl ?? user.photoURL ?? undefined} avatar wrapped />
           )}
           <Modal.Description>
             <Button as="label" htmlFor="user-photo">上傳</Button>
@@ -125,7 +130,10 @@ function MyPhoto({ user }) {
               id="user-photo"
               type="file"
               style={{ display: "none" }}
-              onChange={(e) => setFile(e.target.files[0])}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) setFile(f);
+              }}
             />
           </Modal.Description>
         </Modal.Content>
@@ -138,14 +146,15 @@ function MyPhoto({ user }) {
   );
 }
 
-function MyPassword({ user }) {
+function MyPassword({ user }: UserProp) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [oldPassword, setOldPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const onSubmit = () => {
+    if (!user.email) return;
     setIsLoading(true);
     const credential = EmailAuthProvider.credential(user.email, oldPassword);
     reauthenticateWithCredential(user, credential)
@@ -155,7 +164,7 @@ function MyPassword({ user }) {
           setOldPassword("");
           setNewPassword("");
           setErrorMessage(null);
-        })
+        }),
       )
       .catch((error) => {
         if (error.code === "auth/wrong-password") setErrorMessage("請確認舊密碼");
@@ -205,7 +214,11 @@ function MyPassword({ user }) {
   );
 }
 
-function MySettings({ user }) {
+interface MySettingsProps {
+  user: User | null | undefined;
+}
+
+function MySettings({ user }: MySettingsProps) {
   if (!user) return null;
   return (
     <>

@@ -10,8 +10,10 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import type { DropdownProps } from "semantic-ui-react";
 
 import { Container, Header, Form, Image, Button } from "semantic-ui-react";
+import type { Topic } from "../types";
 
 const PLACEHOLDER_IMAGE = "https://react.semantic-ui.com/images/wireframe/image.png";
 
@@ -19,9 +21,9 @@ function NewPost() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [topics, setTopics] = useState([]);
+  const [topics, setTopics] = useState<Topic[]>([]);
   const [topicName, setTopicName] = useState("");
-  const [file, setFile] = useState(null);
+  const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(PLACEHOLDER_IMAGE);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -29,7 +31,7 @@ function NewPost() {
     const db = getFirestore();
     getDocs(collection(db, "topics"))
       .then((res) => {
-        setTopics(res.docs.map((doc) => doc.data()));
+        setTopics(res.docs.map((d) => d.data() as Topic));
       })
       .catch((error) => console.log("error", error));
   }, []);
@@ -47,18 +49,20 @@ function NewPost() {
   }));
 
   async function onSubmit() {
-    setIsLoading(true);
     const auth = getAuth();
+    const currentUser = auth.currentUser;
+    if (!currentUser) return;
+    setIsLoading(true);
     const db = getFirestore();
     const newDocRef = doc(collection(db, "posts"));
 
     try {
-      let imageUrl = null;
+      let imageUrl: string | null = null;
       if (file) {
         const storage = getStorage();
         const fileRef = ref(storage, "post-images/" + newDocRef.id);
         imageUrl = await uploadBytes(fileRef, file, { contentType: file.type }).then(() =>
-          getDownloadURL(fileRef)
+          getDownloadURL(fileRef),
         );
       }
 
@@ -68,10 +72,10 @@ function NewPost() {
         topic: topicName,
         createdAt: Timestamp.now(),
         author: {
-          displayName: auth.currentUser.displayName || "",
-          photoURL: auth.currentUser.photoURL || "",
-          uid: auth.currentUser.uid || "",
-          email: auth.currentUser.email || "",
+          displayName: currentUser.displayName || "",
+          photoURL: currentUser.photoURL || "",
+          uid: currentUser.uid || "",
+          email: currentUser.email || "",
         },
         imageUrl,
       });
@@ -96,7 +100,10 @@ function NewPost() {
           type="file"
           id="post-image"
           style={{ display: "none" }}
-          onChange={(e) => setFile(e.target.files[0])}
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) setFile(f);
+          }}
         />
         <Form.Input
           value={title}
@@ -105,7 +112,9 @@ function NewPost() {
         />
         <Form.TextArea
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+            setContent(e.target.value)
+          }
           placeholder="輸入文章餒內容"
         />
         <Form.Dropdown
@@ -113,7 +122,9 @@ function NewPost() {
           placeholder="選擇文章主題"
           selection
           value={topicName}
-          onChange={(_, { value }) => setTopicName(value)}
+          onChange={(_: React.SyntheticEvent, { value }: DropdownProps) =>
+            setTopicName(value as string)
+          }
         />
         <Form.Button loading={isLoading}>送出</Form.Button>
       </Form>

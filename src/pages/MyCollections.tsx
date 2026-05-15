@@ -3,17 +3,25 @@ import { Header, Item } from "semantic-ui-react";
 import { getFirestore, collection, getDocs, query, where } from "firebase/firestore";
 
 import Post from "../components/Post";
+import type { User, Post as PostType } from "../types";
 
-function MyCollections({ user }) {
-  const [posts, setPosts] = useState([]);
+interface MyCollectionsProps {
+  user: User | null | undefined;
+}
+
+function MyCollections({ user }: MyCollectionsProps) {
+  const [posts, setPosts] = useState<PostType[]>([]);
 
   useEffect(() => {
     if (!user) return;
     const db = getFirestore();
-    const postsRef = query(collection(db, "posts"), where("collectedBy", "array-contains", user.uid));
+    const postsRef = query(
+      collection(db, "posts"),
+      where("collectedBy", "array-contains", user.uid),
+    );
     getDocs(postsRef)
       .then((res) => {
-        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as PostType[];
         setPosts(data);
       })
       .catch((error) => console.log("error", error));

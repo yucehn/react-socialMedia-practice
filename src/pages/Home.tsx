@@ -9,9 +9,15 @@ import {
   orderBy,
   limit,
   startAfter,
+  type Firestore,
+  type QueryConstraint,
+  type QueryDocumentSnapshot,
+  type DocumentData,
+  type Query,
 } from "firebase/firestore";
 
 import Post from "../components/Post";
+import type { Post as PostType } from "../types";
 
 const POST_HEIGHT = 100;
 const HEADER_HEIGHT = 150;
@@ -20,8 +26,13 @@ function calcLimit() {
   return Math.ceil((window.innerHeight - HEADER_HEIGHT) / POST_HEIGHT) + 2;
 }
 
-function buildQuery(db, currentTopic, pageLimit, snapshot = null) {
-  const constraints = [orderBy("createdAt", "desc"), limit(pageLimit)];
+function buildQuery(
+  db: Firestore,
+  currentTopic: string | null,
+  pageLimit: number,
+  snapshot: QueryDocumentSnapshot<DocumentData> | null = null,
+): Query<DocumentData> {
+  const constraints: QueryConstraint[] = [orderBy("createdAt", "desc"), limit(pageLimit)];
   if (currentTopic) constraints.unshift(where("topic", "==", currentTopic));
   if (snapshot) constraints.push(startAfter(snapshot));
   return query(collection(db, "posts"), ...constraints);
@@ -31,11 +42,11 @@ function Posts() {
   const location = useLocation();
   const urlSearchParams = new URLSearchParams(location.search);
   const currentTopic = urlSearchParams.get("topic");
-  const [posts, setPosts] = useState([]);
-  const lastPostSnapshotRef = useRef(null);
+  const [posts, setPosts] = useState<PostType[]>([]);
+  const lastPostSnapshotRef = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
   const hasMoreRef = useRef(true);
   const isFetchingRef = useRef(false);
-  const sentinelRef = useRef(null);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
   const pageLimitRef = useRef(0);
 
   useEffect(() => {
@@ -45,7 +56,7 @@ function Posts() {
     const db = getFirestore();
     getDocs(buildQuery(db, currentTopic, pageLimitRef.current))
       .then((res) => {
-        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as PostType[];
         lastPostSnapshotRef.current = res.docs[res.docs.length - 1] ?? null;
         hasMoreRef.current = res.docs.length === pageLimitRef.current;
         setPosts(data);
@@ -71,7 +82,7 @@ function Posts() {
       ),
     )
       .then((res) => {
-        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as PostType[];
         lastPostSnapshotRef.current = res.docs[res.docs.length - 1] ?? null;
         hasMoreRef.current = res.docs.length === pageLimitRef.current;
         setPosts((prev) => [...prev, ...data]);

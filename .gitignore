@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
 .firebase
+.storybook
 /dist
 
 # test coverage
@@ -24,3 +25,6 @@ pnpm-debug.log*
 *.njsproj
 *.sln
 *.sw?
+
+*storybook.log
+storybook-static

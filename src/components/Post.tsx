@@ -1,9 +1,14 @@
 import { Link } from "react-router-dom";
 import { Image, Icon } from "semantic-ui-react";
+import type { Post as PostType } from "../types";
 
 const placeholder = "https://react.semantic-ui.com/images/wireframe/image.png";
 
-function Post({ post }) {
+interface PostProps {
+  post: PostType;
+}
+
+function Post({ post }: PostProps) {
   return (
     <Link
       to={`/posts/${post.id}`}

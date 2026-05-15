@@ -9,9 +9,14 @@ import {
 } from "firebase/firestore";
 
 import Post from "../components/Post";
+import type { User, Post as PostType } from "../types";
 
-function MyPost({ user }) {
-  const [posts, setPosts] = useState([]);
+interface MyPostProps {
+  user: User | null | undefined;
+}
+
+function MyPost({ user }: MyPostProps) {
+  const [posts, setPosts] = useState<PostType[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -22,7 +27,7 @@ function MyPost({ user }) {
     );
     getDocs(postsRef)
       .then((res) => {
-        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id }));
+        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as PostType[];
         setPosts(data);
       })
       .catch((error) => console.log("error", error));
