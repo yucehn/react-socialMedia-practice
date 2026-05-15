@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   getFirestore,
   collection,
-  getDocs,
   Timestamp,
   setDoc,
   doc,
@@ -13,28 +12,41 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import type { DropdownProps } from "semantic-ui-react";
 
 import { Container, Header, Form, Image, Button } from "semantic-ui-react";
-import type { Topic } from "../types";
+import { useQuery } from "@tanstack/react-query";
+import { getTopics } from "../api/topics";
 
-const PLACEHOLDER_IMAGE = "https://react.semantic-ui.com/images/wireframe/image.png";
+const PLACEHOLDER_IMAGE =
+  "https://react.semantic-ui.com/images/wireframe/image.png";
+
+interface FormErrors {
+  title?: string;
+  content?: string;
+  topicName?: string;
+}
 
 function NewPost() {
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [topics, setTopics] = useState<Topic[]>([]);
   const [topicName, setTopicName] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(PLACEHOLDER_IMAGE);
   const [isLoading, setIsLoading] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
 
-  useEffect(() => {
-    const db = getFirestore();
-    getDocs(collection(db, "topics"))
-      .then((res) => {
-        setTopics(res.docs.map((d) => d.data() as Topic));
-      })
-      .catch((error) => console.log("error", error));
-  }, []);
+  function validate(): boolean {
+    const e: FormErrors = {};
+    if (!title.trim()) e.title = "請輸入文章標題";
+    if (!content.trim()) e.content = "請輸入文章內容";
+    if (!topicName) e.topicName = "請選擇文章主題";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  }
+
+  const { data: topics = [] } = useQuery({
+    queryKey: ["topics"],
+    queryFn: () => getTopics(),
+  });
 
   useEffect(() => {
     if (!file) return;
@@ -49,6 +61,7 @@ function NewPost() {
   }));
 
   async function onSubmit() {
+    if (!validate()) return;
     const auth = getAuth();
     const currentUser = auth.currentUser;
     if (!currentUser) return;
@@ -61,9 +74,9 @@ function NewPost() {
       if (file) {
         const storage = getStorage();
         const fileRef = ref(storage, "post-images/" + newDocRef.id);
-        imageUrl = await uploadBytes(fileRef, file, { contentType: file.type }).then(() =>
-          getDownloadURL(fileRef),
-        );
+        imageUrl = await uploadBytes(fileRef, file, {
+          contentType: file.type,
+        }).then(() => getDownloadURL(fileRef));
       }
 
       await setDoc(newDocRef, {
@@ -106,26 +119,37 @@ function NewPost() {
           }}
         />
         <Form.Input
+          error={!!errors.title}
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (errors.title) setErrors((prev) => ({ ...prev, title: undefined }));
+          }}
           placeholder="輸入文章標題"
         />
+        {errors.title && <p className="text-red-500 text-sm -mt-3 mb-3">{errors.title}</p>}
         <Form.TextArea
+          error={!!errors.content}
           value={content}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setContent(e.target.value)
-          }
-          placeholder="輸入文章餒內容"
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            setContent(e.target.value);
+            if (errors.content) setErrors((prev) => ({ ...prev, content: undefined }));
+          }}
+          placeholder="輸入文章內容"
         />
+        {errors.content && <p className="text-red-500 text-sm -mt-3 mb-3">{errors.content}</p>}
         <Form.Dropdown
+          error={!!errors.topicName}
           options={options}
           placeholder="選擇文章主題"
           selection
           value={topicName}
-          onChange={(_: React.SyntheticEvent, { value }: DropdownProps) =>
-            setTopicName(value as string)
-          }
+          onChange={(_: React.SyntheticEvent, { value }: DropdownProps) => {
+            setTopicName(value as string);
+            if (errors.topicName) setErrors((prev) => ({ ...prev, topicName: undefined }));
+          }}
         />
+        {errors.topicName && <p className="text-red-500 text-sm mt-1 mb-3">{errors.topicName}</p>}
         <Form.Button loading={isLoading}>送出</Form.Button>
       </Form>
     </Container>

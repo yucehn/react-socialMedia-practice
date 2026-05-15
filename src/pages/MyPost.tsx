@@ -1,37 +1,20 @@
-import { useEffect, useState } from "react";
 import { Header } from "semantic-ui-react";
-import {
-  getFirestore,
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+import { useQuery } from "@tanstack/react-query";
 
 import Post from "../components/Post";
-import type { User, Post as PostType } from "../types";
+import { getMyPosts } from "../api/posts";
+import type { User } from "../types";
 
 interface MyPostProps {
   user: User | null | undefined;
 }
 
 function MyPost({ user }: MyPostProps) {
-  const [posts, setPosts] = useState<PostType[]>([]);
-
-  useEffect(() => {
-    if (!user) return;
-    const db = getFirestore();
-    const postsRef = query(
-      collection(db, "posts"),
-      where("author.uid", "==", user.uid),
-    );
-    getDocs(postsRef)
-      .then((res) => {
-        const data = res.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as PostType[];
-        setPosts(data);
-      })
-      .catch((error) => console.log("error", error));
-  }, [user]);
+  const { data: posts = [] } = useQuery({
+    queryKey: ["myPosts", user?.uid],
+    queryFn: () => getMyPosts(user!.uid),
+    enabled: !!user,
+  });
 
   return (
     <>
