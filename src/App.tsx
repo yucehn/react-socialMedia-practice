@@ -17,7 +17,7 @@ import NewPost from "./pages/NewPost";
 import Post from "./pages/Post";
 import MyPost from "./pages/MyPost";
 import MyCollections from "./pages/MyCollections";
-import MySettings from "./pages/MySettings";
+import MySettings from "./pages/MySetting";
 
 import Topics from "./components/Topics";
 import MyMenu from "./components/MyMenu";

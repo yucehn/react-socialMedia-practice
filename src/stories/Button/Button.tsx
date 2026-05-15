@@ -1,8 +1,8 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { cn } from "../utils/cn";
+import { cn } from "../../utils/cn";
 
 const buttonVariants = cva(
-  "inline-block cursor-pointer border-0 rounded-[3em] font-bold leading-none",
+  "inline-block cursor-pointer border-0 rounded-[3em] font-bold leading-none hover:opacity-80",
   {
     variants: {
       variant: {
@@ -46,7 +46,6 @@ export const Button = ({
     className={cn(
       buttonVariants({ variant: primary ? "primary" : "secondary", size }),
       className,
-      "hover:opacity-80",
     )}
     style={{ backgroundColor, ...style }}
     {...props}
