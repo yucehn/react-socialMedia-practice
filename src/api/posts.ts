@@ -9,13 +9,20 @@ import {
   where,
 } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import type { Post, PostAuthor } from "../types";
+import type { Post, PostAuthor, Comment } from "../types";
 
 export async function getMyPosts(uid: string): Promise<Post[]> {
   const db = getFirestore();
   const postsRef = query(collection(db, "posts"), where("author.uid", "==", uid));
   const res = await getDocs(postsRef);
   return res.docs.map((doc) => ({ ...doc.data(), id: doc.id })) as Post[];
+}
+
+export async function getPostComments(postId: string): Promise<Comment[]> {
+  const db = getFirestore();
+  const commentsRef = collection(db, "posts", postId, "comments");
+  const res = await getDocs(commentsRef);
+  return res.docs.map((doc) => ({ ...doc.data() })) as Comment[];
 }
 
 interface CreatePostInput {

@@ -14,6 +14,10 @@ function MyMenu() {
       path: '/my/collections',
     },
     {
+      name: '文章分析',
+      path: '/my/analyze',
+    },
+    {
       name: '會員資料',
       path: '/my/settings',
     },

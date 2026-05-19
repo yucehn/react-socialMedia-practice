@@ -18,6 +18,7 @@ import Post from "./pages/Post";
 import MyPost from "./pages/MyPost";
 import MyCollections from "./pages/MyCollections";
 import MySettings from "./pages/MySetting";
+import MyAnalyze from "./pages/MyAnalyze";
 
 import Topics from "./components/Topics";
 import MyMenu from "./components/MyMenu";
@@ -80,6 +81,10 @@ function App() {
                     <Route
                       path="/my/settings"
                       element={<MySettings user={user} />}
+                    />
+                    <Route
+                      path="/my/analyze"
+                      element={<MyAnalyze user={user} />}
                     />
                   </Route>
                   <Route

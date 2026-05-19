@@ -62,7 +62,10 @@ function Post({ user }: PostPageProps) {
     return () => unsubscribe();
   }, [postId]);
 
-  function toggle(isActive: boolean | undefined, field: "likedBy" | "collectedBy") {
+  function toggle(
+    isActive: boolean | undefined,
+    field: "likedBy" | "collectedBy",
+  ) {
     if (!uid) return;
     updateDoc(docRef, {
       [field]: isActive ? arrayRemove(uid) : arrayUnion(uid),
@@ -110,15 +113,16 @@ function Post({ user }: PostPageProps) {
 
   return (
     <Grid.Column width={10}>
-      {post.author.photoURL ? (
-        <Image src={post.author.photoURL} avatar />
-      ) : (
-        <Icon name="user circle" />
-      )}
-
-      {post.author.displayName || "使用者"}
       <Header>
-        {post.title}
+        <Header.Subheader className="!mb-2 !text-md">
+          {post.author.photoURL ? (
+            <Image src={post.author.photoURL} avatar />
+          ) : (
+            <Icon name="user circle" />
+          )}
+          {post.author.displayName || "使用者"}
+        </Header.Subheader>
+        <div className="mb-3">{post.title}</div>
         <Header.Subheader>
           {post.topic}。{post.createdAt?.toDate().toLocaleDateString()}
         </Header.Subheader>

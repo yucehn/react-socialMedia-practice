@@ -27,9 +27,7 @@ const SIGNIN_ERRORS: Record<string, string> = {
 function SignIn() {
   const auth = getAuth();
   const navigate = useNavigate();
-  const [activeItem, setActiveItem] = useState<"register" | "signIn">(
-    "register",
-  );
+  const [activeItem, setActiveItem] = useState<"register" | "signIn">("signIn");
 
   const {
     register,
